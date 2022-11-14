@@ -1,18 +1,27 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "description": "",
   "main": "pub-sub.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node pub-sub.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "body-parser": "^1.20.0",
+    "body-parser": "^1.20.1",
     "cors": "^2.8.5",
-    "express": "^4.18.1",
-    "mongoose": "^6.4.5",
+    "express": "^4.18.2",
+    "mongoose": "^6.7.2",
     "mqtt": "^4.3.7"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ChangChang221/tttrang-aqi-backend.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ChangChang221/tttrang-aqi-backend/issues"
+  },
+  "homepage": "https://github.com/ChangChang221/tttrang-aqi-backend#readme",
+  "description": ""
 }
