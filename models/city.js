@@ -26,6 +26,9 @@ var citySchema = new mongoose.Schema({
   },
   AQI:{
     type: String
+  },
+  img:{
+    type: String
   }
 }, {
   collection: 'city'
