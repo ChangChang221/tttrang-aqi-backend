@@ -101,16 +101,27 @@ client.on('message', function(topic, message) {
         let getMonth = date_ob.getUTCMonth();
         let getDate = date_ob.getUTCDate();
 
-        if (getMonth < 10 && getDate < 10) {
-            a = `${date_ob.getFullYear()}-0${date_ob.getMonth()+1}-0${date_ob.getDate()}T00:00:00.000+00:00`;
-        } else if (getMonth < 10 && getDate >= 10) {
-            a = `${date_ob.getFullYear()}-0${date_ob.getMonth()+1}-${date_ob.getDate()}T00:00:00.000+00:00`;
-        }else if (getMonth >= 10 && getDate < 10) {
-            a = `${date_ob.getFullYear()}-${date_ob.getMonth()+1}-0${date_ob.getUTCDate()}T00:00:00.000+00:00`;
+        // if (getMonth < 10 && getDate < 10) {
+        //     a = `${date_ob.getFullYear()}-0${date_ob.getMonth()+1}-0${date_ob.getDate()}T00:00:00.000+00:00`;
+        // } else if (getMonth < 10 && getDate >= 10) {
+        //     a = `${date_ob.getFullYear()}-0${date_ob.getMonth()+1}-${date_ob.getDate()}T00:00:00.000+00:00`;
+        // }else if (getMonth >= 10 && getDate < 10) {
+        //     a = `${date_ob.getFullYear()}-${date_ob.getMonth()+1}-0${date_ob.getUTCDate()}T00:00:00.000+00:00`;
+        // } else {
+        //     a = `${date_ob.getFullYear()}-${date_ob.getMonth()+1}-${date_ob.getUTCDate()}T00:00:00.000+00:00`;
+        // }
+
+        if (getMonth < 10 && getDate <= 10) {
+            a = `${date_ob.getUTCFullYear()}-0${date_ob.getUTCMonth()+1}-0${date_ob.getUTCDate()-1}T17:00:00.000+00:00`;
+        } else if (getMonth < 10 && getDate > 10) {
+            a = `${date_ob.getUTCFullYear()}-0${date_ob.getUTCMonth()+1}-${date_ob.getUTCDate()-1}T17:00:00.000+00:00`;
+        }else if (getMonth >= 10 && getDate <= 10) {
+            a = `${date_ob.getUTCFullYear()}-${date_ob.getUTCMonth()+1}-0${date_ob.getUTCDate()-1}T17:00:00.000+00:00`;
         } else {
-            a = `${date_ob.getFullYear()}-${date_ob.getMonth()+1}-${date_ob.getUTCDate()}T00:00:00.000+00:00`;
+            a = `${date_ob.getUTCFullYear()}-${date_ob.getUTCMonth()+1}-${date_ob.getUTCDate()-1}T17:00:00.000+00:00`;
         }
-        console.log("a", a)
+
+        console.log({a})
         history.find({
             "name": dataMessage.name,
             "date": {
@@ -141,6 +152,7 @@ client.on('close', () => {
 });
 // subscribe to topic 'my/test/topic'
 client.subscribe('mytopic');
+client.subscribe('AQITopicĐA');
 // publish message 'Hello' to topic 'my/test/topic'
 // let dataPush = {
 //     id: "62808211ee8fefe86e989d2e",
@@ -200,6 +212,7 @@ app.get('/api/history/name', (req, res) => {
     } else {
         a = `${date_ob.getUTCFullYear()}-${date_ob.getUTCMonth()+1}-${date_ob.getUTCDate()-1}T17:00:00.000+00:00`;
     }
+    console.log({a})
     const city_name = req.query.name;
     history.find({
         "name": city_name,
@@ -281,6 +294,29 @@ db.once("open", () => {
             break;
       }
     });
+
+    const histotyChangeStream = db.collection("history").watch();
+    histotyChangeStream.on("change", (change) => {
+
+        switch (change.operationType) {
+          case "insert":{
+              const newHistory = {
+                  _id: change.fullDocument._id,
+                  name: change.fullDocument.name,
+                  date: change.fullDocument.date,
+                  humidity: change.fullDocument.humidity,
+                  co2: change.fullDocument.co2,
+                  co: change.fullDocument.co,
+                  pm25: change.fullDocument.pm25,
+                  AQI: change.fullDocument.AQI,
+                };
+                io.of("/api/socket").emit("newHistory", newHistory);
+              break;
+          }
+            default:
+              break;
+        }
+      });
   });
   
 

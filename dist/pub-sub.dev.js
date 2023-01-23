@@ -117,8 +117,6 @@ client.on('message', function (topic, message) {
     } else {
       a = "".concat(_date_ob.getFullYear(), "-").concat(_date_ob.getMonth() + 1, "-").concat(_date_ob.getUTCDate(), "T00:00:00.000+00:00");
     }
-
-    console.log("a", a);
     history.find({
       "name": dataMessage.name,
       "date": {
@@ -169,6 +167,7 @@ app.get('/api', function (req, res) {
     }
   });
 });
+
 app.get('/api/name', function (req, res) {
   var city_name = req.query.name;
   city.findOne({
@@ -181,6 +180,7 @@ app.get('/api/name', function (req, res) {
     }
   }); // res.json(cityController.getCity(city_name));
 });
+
 app.get('/api/history/name', function (req, res) {
   var a = "";
   var date_ob = new Date();
@@ -196,7 +196,6 @@ app.get('/api/history/name', function (req, res) {
   } else {
     a = "".concat(date_ob.getUTCFullYear(), "-").concat(date_ob.getUTCMonth() + 1, "-").concat(date_ob.getUTCDate() - 1, "T17:00:00.000+00:00");
   }
-
   var city_name = req.query.name;
   history.find({
     "name": city_name,
@@ -212,6 +211,7 @@ app.get('/api/history/name', function (req, res) {
     }
   });
 });
+
 app.get("/api/send", function (req, res) {
   client.publish('mytopic', dataPush); // console.log("req.body.message");
 
