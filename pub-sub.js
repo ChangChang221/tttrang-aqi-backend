@@ -1,3 +1,4 @@
+require('dotenv').config()
 var mqtt = require('mqtt')
 var bodyParser = require("body-parser");
 const express = require('express')
@@ -8,10 +9,15 @@ const city = require('./models/city');
 const history = require('./models/history');
 const cityController = require('./controller/cityController');
 var path=require('path');
+const server = require("http").Server(app);
+const io = require("socket.io")(server, {
+    cors: {
+      origin: '*',
+    }
+  });
 
 //Import the mongoose module
 var mongoose = require('mongoose');
-const { Console } = require('console');
 
 //Set up default mongoose connection
 var mongoDB = "mongodb+srv://trangnt:trangtute@cluster0.zdvmv.mongodb.net/esp32?retryWrites=true&w=majority";
@@ -150,6 +156,14 @@ client.subscribe('mytopic');
 // client.publish('mytopic', JSON.stringify(dataPush));
 //create a server object:
 
+io.of("/api/socket").on("connection", (socket) => {
+    console.log("socket.io: User connected: ", socket.id);
+  
+    socket.on("disconnect", () => {
+      console.log("socket.io: User disconnected: ", socket.id);
+    });
+  });
+
 app.get('/api', (req, res) => {
     city.find(function(err, city) {
         if (err) {
@@ -159,6 +173,7 @@ app.get('/api', (req, res) => {
         }
     });
 });
+
 app.get('/api/name', (req, res) => {
     const city_name = req.query.name;
     city.findOne({ name: city_name }, function(err, city) {
@@ -209,8 +224,64 @@ app.get("/api/send", function(req, res) {
     });
 });
 
-app.listen(port, () => {
+server.listen(port, () => {
     console.log(`Example app listening on port ${port}`)
 })
+
+db.once("open", () => {
+    console.log("MongoDB database connected");
+  
+    console.log("Setting change streams");
+    const cityChangeStream = db.collection("city").watch();
+
+    cityChangeStream.on("change", (change) => {
+
+      switch (change.operationType) {
+        case "insert":{
+            const newCity = {
+                _id: change.fullDocument._id,
+                name: change.fullDocument.name,
+                humidity: change.fullDocument.humidity,
+                co2: change.fullDocument.co2,
+                co: change.fullDocument.co,
+                pm25: change.fullDocument.pm25,
+                AQI: change.fullDocument.AQI,
+                img: change.fullDocument.img,
+              };
+              io.of("/api/socket").emit("newCity", city);
+            break;
+        }
+        case "update":{
+            // const city = {
+            //     _id: change.fullDocument._id,
+            //     name: change.fullDocument.name,
+            //     humidity: change.fullDocument.humidity,
+            //     co2: change.fullDocument.co2,
+            //     co: change.fullDocument.co,
+            //     pm25: change.fullDocument.pm25,
+            //     pm10: change.fullDocument.pm10,
+            //     AQI: change.fullDocument.AQI,
+            //     img: change.fullDocument.img,
+            //   };
+      
+              io.of("/api/socket").emit("updateCity", "update");
+              break;
+        }
+          case 'delete': {
+            console.log('a delete happened...');
+
+            io.of("/api/socket").emit('deleteCity', {
+              type: 'delete',
+              deletedId: change.documentKey._id,
+              msg: 'Question has been deleted.'
+            });
+            break;
+          }
+          default:
+            break;
+      }
+    });
+  });
+  
 
 //https://tttrangweb-aqi.herokuapp.com/
