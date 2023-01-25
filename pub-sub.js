@@ -232,6 +232,56 @@ app.get('/api/history/name', (req, res) => {
     })
 });
 
+app.post('/api/history', (req, res) => {
+    const {body} =  req
+    const startDate= body.startDate
+    const endDate= body.endDate
+    const city_name = body.name;
+    console.log({body})
+    a= dayjs().startOf('day').format();
+    b= dayjs().format()
+    console.log("a", dayjs(startDate).format())
+    console.log("b", dayjs(endDate).endOf('day').format())
+    history.find({
+        "name": city_name,
+        "date": {
+            "$gt": dayjs(startDate).startOf('day').format(),
+            "$lt": dayjs(endDate).endOf('day').format(),
+        }
+    }, function(err, history) {
+        if (err) {
+            console.log(err);
+        } else {
+            res.json(history);
+        }
+    })
+});
+
+app.get('/api/history', (req, res) => {
+    const {body} =  req
+    const startDate= body.startDate
+    const endDate= body.endDate
+    const city_name = body.name;
+    console.log({body})
+    a= dayjs().startOf('day').format();
+    b= dayjs().format()
+    console.log("a", dayjs(startDate).format())
+    console.log("b", dayjs(endDate).endOf('day').format())
+    history.find({
+        "name": city_name,
+        "date": {
+            "$gt": dayjs(startDate).startOf('day').format(),
+            "$lt": dayjs(endDate).endOf('day').format(),
+        }
+    }, function(err, history) {
+        if (err) {
+            console.log(err);
+        } else {
+            res.json(history);
+        }
+    })
+});
+
 app.get("/api/send", function(req, res) {
     client.publish('mytopic', dataPush);
     // console.log("req.body.message");
