@@ -143,7 +143,8 @@ client.on('close', function () {
   console.log("disconnected mqtt");
 }); // subscribe to topic 'my/test/topic'
 
-client.subscribe('mytopic'); // publish message 'Hello' to topic 'my/test/topic'
+client.subscribe('AQIDAN');
+// client.subscribe('mytopic'); // publish message 'Hello' to topic 'my/test/topic'
 // let dataPush = {
 //     id: "62808211ee8fefe86e989d2e",
 //     name: "hà nội",
@@ -213,7 +214,7 @@ app.get('/api/history/name', function (req, res) {
 });
 
 app.get("/api/send", function (req, res) {
-  client.publish('mytopic', dataPush); // console.log("req.body.message");
+  client.publish('AQIDAN', dataPush); // console.log("req.body.message");
 
   res.send({
     message: dataPush
