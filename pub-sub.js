@@ -129,7 +129,6 @@ client.on('message', function(topic, message) {
         // save model to database
             history1.save(function(err, history) {                
                 if (err) return console.error(err);
-                console.log({history})
             });
             cityController.updateMQTT(dataMessage);
         });
@@ -143,7 +142,7 @@ client.on('close', () => {
     console.log(`disconnected mqtt`);
 });
 // subscribe to topic 'my/test/topic'
-client.subscribe('mytopic');
+client.subscribe('AQIDA');
 // publish message 'Hello' to topic 'my/test/topic'
 // let dataPush = {
 //     id: "62808211ee8fefe86e989d2e",
@@ -277,7 +276,7 @@ app.get('/api/history', (req, res) => {
 });
 
 app.get("/api/send", function(req, res) {
-    client.publish('mytopic', dataPush);
+    client.publish('AQIDA', dataPush);
     res.send({
         message: dataPush
     });
