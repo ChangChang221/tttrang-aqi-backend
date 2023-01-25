@@ -97,10 +97,10 @@ client.on('message', function(topic, message) {
         dataMessage.co2=parseFloat(dataMessage.co2).toFixed(0); 
         dataMessage.pm25= parseFloat(dataMessage.pm25).toFixed(2);
         dataMessage.date = new Date();
-        let a = "";
-        let date_ob = new Date();
-        let getMonth = date_ob.getUTCMonth();
-        let getDate = date_ob.getUTCDate();
+        // let a = "";
+        // let date_ob = new Date();
+        // let getMonth = date_ob.getUTCMonth();
+        // let getDate = date_ob.getUTCDate();
         // if (getMonth < 10 && getDate <= 10) {
         //     a = `${date_ob.getUTCFullYear()}-0${date_ob.getUTCMonth()+1}-0${date_ob.getUTCDate()-1}T17:00:00.000+00:00`;
         // } else if (getMonth < 10 && getDate > 10) {
@@ -110,8 +110,8 @@ client.on('message', function(topic, message) {
         // } else {
         //     a = `${date_ob.getUTCFullYear()}-${date_ob.getUTCMonth()+1}-${date_ob.getUTCDate()-1}T17:00:00.000+00:00`;
         // }
-        a= dayjs().startOf('day').format();
-        b= dayjs().format()
+        // a= dayjs().startOf('day').format();
+        // b= dayjs().format()
         // console.log(typeof a)
 
         history.find({
@@ -129,10 +129,10 @@ client.on('message', function(topic, message) {
         // save model to database
             history1.save(function(err, history) {                
                 if (err) return console.error(err);
+                console.log({history})
             });
             cityController.updateMQTT(dataMessage);
         });
-       console.log("calculatorAQIByPM(aqi) sau", dataMessage);
         
     } catch (e) {
         console.log("error mess")
@@ -144,7 +144,6 @@ client.on('close', () => {
 });
 // subscribe to topic 'my/test/topic'
 client.subscribe('mytopic');
-client.subscribe('AQITopicĐA');
 // publish message 'Hello' to topic 'my/test/topic'
 // let dataPush = {
 //     id: "62808211ee8fefe86e989d2e",
@@ -215,8 +214,7 @@ app.get('/api/history/name', (req, res) => {
     //     }
     a= dayjs().startOf('day').format();
     b= dayjs().format()
-    console.log("a", dayjs().startOf('day').format())
-    console.log("b", dayjs().format())
+
     history.find({
         "name": city_name,
         "date": {
@@ -237,11 +235,9 @@ app.post('/api/history', (req, res) => {
     const startDate= body.startDate
     const endDate= body.endDate
     const city_name = body.name;
-    console.log({body})
     a= dayjs().startOf('day').format();
     b= dayjs().format()
-    console.log("a", dayjs(startDate).format())
-    console.log("b", dayjs(endDate).endOf('day').format())
+
     history.find({
         "name": city_name,
         "date": {
@@ -262,11 +258,9 @@ app.get('/api/history', (req, res) => {
     const startDate= body.startDate
     const endDate= body.endDate
     const city_name = body.name;
-    console.log({body})
     a= dayjs().startOf('day').format();
     b= dayjs().format()
-    console.log("a", dayjs(startDate).format())
-    console.log("b", dayjs(endDate).endOf('day').format())
+
     history.find({
         "name": city_name,
         "date": {
@@ -284,7 +278,6 @@ app.get('/api/history', (req, res) => {
 
 app.get("/api/send", function(req, res) {
     client.publish('mytopic', dataPush);
-    // console.log("req.body.message");
     res.send({
         message: dataPush
     });
@@ -349,6 +342,7 @@ db.once("open", () => {
     });
 
     const histotyChangeStream = db.collection("history").watch();
+
     histotyChangeStream.on("change", (change) => {
 
         switch (change.operationType) {
