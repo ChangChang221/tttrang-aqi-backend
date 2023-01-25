@@ -142,7 +142,7 @@ client.on('close', () => {
     console.log(`disconnected mqtt`);
 });
 // subscribe to topic 'my/test/topic'
-client.subscribe('AQIDA');
+client.subscribe('AQIDATN');
 // publish message 'Hello' to topic 'my/test/topic'
 // let dataPush = {
 //     id: "62808211ee8fefe86e989d2e",
@@ -276,7 +276,7 @@ app.get('/api/history', (req, res) => {
 });
 
 app.get("/api/send", function(req, res) {
-    client.publish('AQIDA', dataPush);
+    client.publish('AQIDATN', dataPush);
     res.send({
         message: dataPush
     });
