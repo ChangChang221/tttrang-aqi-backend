@@ -9,6 +9,7 @@ const city = require('./models/city');
 const history = require('./models/history');
 const cityController = require('./controller/cityController');
 var path=require('path');
+const dayjs = require('dayjs')
 const server = require("http").Server(app);
 const io = require("socket.io")(server, {
     cors: {
@@ -100,33 +101,24 @@ client.on('message', function(topic, message) {
         let date_ob = new Date();
         let getMonth = date_ob.getUTCMonth();
         let getDate = date_ob.getUTCDate();
-
-        // if (getMonth < 10 && getDate < 10) {
-        //     a = `${date_ob.getFullYear()}-0${date_ob.getMonth()+1}-0${date_ob.getDate()}T00:00:00.000+00:00`;
-        // } else if (getMonth < 10 && getDate >= 10) {
-        //     a = `${date_ob.getFullYear()}-0${date_ob.getMonth()+1}-${date_ob.getDate()}T00:00:00.000+00:00`;
-        // }else if (getMonth >= 10 && getDate < 10) {
-        //     a = `${date_ob.getFullYear()}-${date_ob.getMonth()+1}-0${date_ob.getUTCDate()}T00:00:00.000+00:00`;
+        // if (getMonth < 10 && getDate <= 10) {
+        //     a = `${date_ob.getUTCFullYear()}-0${date_ob.getUTCMonth()+1}-0${date_ob.getUTCDate()-1}T17:00:00.000+00:00`;
+        // } else if (getMonth < 10 && getDate > 10) {
+        //     a = `${date_ob.getUTCFullYear()}-0${date_ob.getUTCMonth()+1}-${date_ob.getUTCDate()-1}T17:00:00.000+00:00`;
+        // }else if (getMonth >= 10 && getDate <= 10) {
+        //     a = `${date_ob.getUTCFullYear()}-${date_ob.getUTCMonth()+1}-0${date_ob.getUTCDate()-1}T17:00:00.000+00:00`;
         // } else {
-        //     a = `${date_ob.getFullYear()}-${date_ob.getMonth()+1}-${date_ob.getUTCDate()}T00:00:00.000+00:00`;
+        //     a = `${date_ob.getUTCFullYear()}-${date_ob.getUTCMonth()+1}-${date_ob.getUTCDate()-1}T17:00:00.000+00:00`;
         // }
+        a= dayjs().startOf('day').format();
+        b= dayjs().format()
+        // console.log(typeof a)
 
-        if (getMonth < 10 && getDate <= 10) {
-            a = `${date_ob.getUTCFullYear()}-0${date_ob.getUTCMonth()+1}-0${date_ob.getUTCDate()-1}T17:00:00.000+00:00`;
-        } else if (getMonth < 10 && getDate > 10) {
-            a = `${date_ob.getUTCFullYear()}-0${date_ob.getUTCMonth()+1}-${date_ob.getUTCDate()-1}T17:00:00.000+00:00`;
-        }else if (getMonth >= 10 && getDate <= 10) {
-            a = `${date_ob.getUTCFullYear()}-${date_ob.getUTCMonth()+1}-0${date_ob.getUTCDate()-1}T17:00:00.000+00:00`;
-        } else {
-            a = `${date_ob.getUTCFullYear()}-${date_ob.getUTCMonth()+1}-${date_ob.getUTCDate()-1}T17:00:00.000+00:00`;
-        }
-
-        console.log({a})
         history.find({
             "name": dataMessage.name,
             "date": {
-                "$gt": new Date(a),
-                "$lt": new Date(),
+                "$gt": dayjs().startOf('day').format(),
+                "$lt": dayjs().format(),
             }
         })
         .then(data => {
@@ -176,7 +168,7 @@ io.of("/api/socket").on("connection", (socket) => {
     });
   });
 
-app.get('/api', (req, res) => {
+app.get('/api/city', (req, res) => {
     city.find(function(err, city) {
         if (err) {
             console.log(err);
@@ -203,22 +195,33 @@ app.get('/api/history/name', (req, res) => {
     let date_ob = new Date();
     let getMonth = date_ob.getUTCMonth() + 1;
     let getDate = date_ob.getUTCDate();
-    if (getMonth < 10 && getDate <= 10) {
-        a = `${date_ob.getUTCFullYear()}-0${date_ob.getUTCMonth()+1}-0${date_ob.getUTCDate()-1}T17:00:00.000+00:00`;
-    } else if (getMonth < 10 && getDate > 10) {
-        a = `${date_ob.getUTCFullYear()}-0${date_ob.getUTCMonth()+1}-${date_ob.getUTCDate()-1}T17:00:00.000+00:00`;
-    }else if (getMonth >= 10 && getDate <= 10) {
-        a = `${date_ob.getUTCFullYear()}-${date_ob.getUTCMonth()+1}-0${date_ob.getUTCDate()-1}T17:00:00.000+00:00`;
-    } else {
-        a = `${date_ob.getUTCFullYear()}-${date_ob.getUTCMonth()+1}-${date_ob.getUTCDate()-1}T17:00:00.000+00:00`;
-    }
-    console.log({a})
+
+    // if (getMonth < 10 && getDate <= 10) {
+    //     a = `${date_ob.getUTCFullYear()}-0${date_ob.getUTCMonth()+1}-0${date_ob.getUTCDate()-1}T17:00:00.000+00:00`;
+    // } else if (getMonth < 10 && getDate > 10) {
+    //     a = `${date_ob.getUTCFullYear()}-0${date_ob.getUTCMonth()+1}-${date_ob.getUTCDate()-1}T17:00:00.000+00:00`;
+    // }else if (getMonth >= 10 && getDate <= 10) {
+    //     a = `${date_ob.getUTCFullYear()}-${date_ob.getUTCMonth()+1}-0${date_ob.getUTCDate()-1}T17:00:00.000+00:00`;
+    // } else {
+    //     a = `${date_ob.getUTCFullYear()}-${date_ob.getUTCMonth()+1}-${date_ob.getUTCDate()-1}T17:00:00.000+00:00`;
+    // }
+
     const city_name = req.query.name;
+    // history.find({
+    //     "name": city_name,
+    //     "date": {
+    //         "$gt": new Date(a),
+    //         "$lt": new Date(),
+    //     }
+    a= dayjs().startOf('day').format();
+    b= dayjs().format()
+    console.log("a", dayjs().startOf('day').format())
+    console.log("b", dayjs().format())
     history.find({
         "name": city_name,
         "date": {
-            "$gt": new Date(a),
-            "$lt": new Date(),
+            "$gt": dayjs().startOf('day').format(),
+            "$lt": dayjs().format(),
         }
     }, function(err, history) {
         if (err) {
