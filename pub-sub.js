@@ -368,7 +368,7 @@ app.get("/api/send", function(req, res) {
         // Lưu user vào database
         await user.save();
 
-        const token = jwt.sign({ userId: user._id, role: user.role }, 'mySecretKey');
+        const token = jwt.sign({ userId: user._id, role: user.role }, process.env.JWT_KEY);
         //   const token = jwt.sign({ userId: user._id, username:  role: user.role}, 'secret');
         res.status(201).json({ message: 'Đăng ký thành công', token });
         } catch (err) {
@@ -376,6 +376,44 @@ app.get("/api/send", function(req, res) {
         res.status(500).json({ message: 'Lỗi server' });
         }
     });
+
+    // app.get('/api/users', async (req, res) => {
+    //     try {
+    //       const users = await User.find({});
+    //       res.status(200).json(users);
+    //     } catch (err) {
+    //       console.error(err);
+    //       res.status(500).json({ message: 'Internal Server Error' });
+    //     }
+    //   });
+    const requireAuth = (req, res, next) => {
+        const token = req.headers.authorization;
+        console.log({token})
+        if (!token) {
+          return res.status(401).json({ message: "Bạn chưa đăng nhập" });
+        }
+        try {
+          const decodedToken = jwt.verify(token.split(" ")[1], process.env.JWT_KEY);
+          req.user = decodedToken;
+          console.log({decodedToken})
+          if(decodedToken.role === "admin")  return next();
+          else res.status(401).json({ message: "Token không hợp lệ" });
+        } catch (err) {
+          console.error(err);
+          return res.status(401).json({ message: "Token không hợp lệ" });
+        }
+    };
+      
+      // API get list user
+      app.get("/api/users", requireAuth, async (req, res) => {
+        try {
+          const users = await User.find();
+          res.status(200).json(users);
+        } catch (err) {
+          console.error(err);
+          res.status(500).json({ message: "Lỗi server" });
+        }
+      });
 
 //   app.get('/users', authenticateToken, (req, res) => {
 //     if (req.user.permissions.role !== 'admin') {
