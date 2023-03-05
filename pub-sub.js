@@ -308,7 +308,7 @@ app.get("/api/send", function(req, res) {
 //     });
 //   });
 
-  app.post('/login', async (req, res) => {
+  app.post('/api/login', async (req, res) => {
 
     const { email, password } = req.body;
 
@@ -344,7 +344,7 @@ app.get("/api/send", function(req, res) {
   });  
 
 
-    app.post('/register', async (req, res) => {
+    app.post('/api/register', async (req, res) => {
         try {
         const { email, password, role } = req.body;
 
