@@ -6,11 +6,21 @@ const app = express()
 const port = process.env.PORT || 5000;
 const cors = require('cors');
 const city = require('./models/city');
+const User = require('./models/user');
 const history = require('./models/history');
 const cityController = require('./controller/cityController');
 var path=require('path');
 const dayjs = require('dayjs')
 const server = require("http").Server(app);
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+
+// Mock user data
+const users = [
+  { id: 1, username: 'user1@example.com', password: '$2b$10$mYFzDInpNn28BClNefRvJ.knB9Xpt44kZ5HL5NV5hJo/5PA3qLneK' }, // hashed password for "password1"
+  { id: 2, username: 'user2@example.com', password: '$2b$10$6yaLXdvmC47ej6J2H6OY..6WXlU6pYno6jhInbkbGyTgILB1JeT0e' }, // hashed password for "password2"
+];
+
 const io = require("socket.io")(server, {
     cors: {
       origin: '*',
@@ -282,6 +292,104 @@ app.get("/api/send", function(req, res) {
     });
 });
 
+// app.post('/login', (req, res) => {
+//     // Find user by email
+//     const user = users.find(user => user.email === req.body.email);
+//     if (!user) return res.status(404).json({ message: 'User not found' });
+  
+//     // Check password
+//     bcrypt.compare(req.body.password, user.password, (err, result) => {
+//       if (err) return res.status(500).json({ message: err.message });
+//       if (!result) return res.status(401).json({ message: 'Incorrect password' });
+  
+//       // Generate JWT token
+//       const token = jwt.sign({ userId: user.id }, 'secret', { expiresIn: '1h' });
+//       res.json({ token });
+//     });
+//   });
+
+  app.post('/login', async (req, res) => {
+
+    const { email, password } = req.body;
+
+    try {
+        // Tìm user trong cơ sở dữ liệu
+        const user = await User.findOne({ email });
+
+        if (!user) {
+        return res.status(401).json({ message: 'Email không tồn tại' });
+        }
+        
+        console.log({user})
+
+        // So sánh mật khẩu đã được mã hóa trong cơ sở dữ liệu với mật khẩu cung cấp bởi người dùng
+        //const isMatch = await bcrypt.compare(password, user.password);
+       
+        const isMatch = password === user.password;
+
+        if (!isMatch) {
+        return res.status(401).json({ message: 'Mật khẩu không đúng' });
+        }
+
+        // Nếu đăng nhập thành công, tạo token
+        const token = jwt.sign({ username: user.email , role: user.role}, process.env.JWT_KEY, {
+        expiresIn: '1h',
+        });
+
+        res.json({ message: 'Đăng nhập thành công', token });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Lỗi server' });
+    }
+  });  
+
+
+    app.post('/register', async (req, res) => {
+        try {
+        const { email, password, role } = req.body;
+
+        // Kiểm tra xem email đã tồn tại trong database chưa
+        const userExist = await User.findOne({ email });
+        if (userExist) {
+        return res.status(400).json({ message: 'Email đã tồn tại' });
+        }
+
+        // Hash mật khẩu
+        // const salt = await bcrypt.genSalt(10);
+        // const hashedPassword = await bcrypt.hash(password, salt);
+
+        // Tạo user mới với vai trò 'user'
+        const user = new User({
+            email,
+            password: password,
+            role,
+        });
+
+        // Lưu user vào database
+        await user.save();
+
+        const token = jwt.sign({ userId: user._id, role: user.role }, 'mySecretKey');
+        //   const token = jwt.sign({ userId: user._id, username:  role: user.role}, 'secret');
+        res.status(201).json({ message: 'Đăng ký thành công', token });
+        } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Lỗi server' });
+        }
+    });
+
+//   app.get('/users', authenticateToken, (req, res) => {
+//     if (req.user.permissions.role !== 'admin') {
+//       return res.status(403).json({ message: 'Unauthorized' });
+//     }
+  
+//     User.find({}).then((users) => {
+//       res.json(users); // Return list of users as JSON
+//     }).catch((err) => {
+//       res.status(500).json({ message: err.message });
+//     });
+//   });
+  
+
 server.listen(port, () => {
     console.log(`Example app listening on port ${port}`)
 })
@@ -343,7 +451,6 @@ db.once("open", () => {
     const histotyChangeStream = db.collection("history").watch();
 
     histotyChangeStream.on("change", (change) => {
-
         switch (change.operationType) {
           case "insert":{
               const newHistory = {
