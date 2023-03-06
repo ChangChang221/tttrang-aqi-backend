@@ -317,7 +317,7 @@ app.get("/api/send", function(req, res) {
         const user = await User.findOne({ email });
 
         if (!user) {
-        return res.status(401).json({ message: 'Email không tồn tại' });
+        return res.status(401).json({ message: 'Username không tồn tại' });
         }
         
         console.log({user})
@@ -351,7 +351,7 @@ app.get("/api/send", function(req, res) {
         // Kiểm tra xem email đã tồn tại trong database chưa
         const userExist = await User.findOne({ email });
         if (userExist) {
-        return res.status(400).json({ message: 'Email đã tồn tại' });
+        return res.status(400).json({ message: 'Username đã tồn tại' });
         }
 
         // Hash mật khẩu
@@ -412,6 +412,64 @@ app.get("/api/send", function(req, res) {
         } catch (err) {
           console.error(err);
           res.status(500).json({ message: "Lỗi server" });
+        }
+      });
+
+      app.delete('/api/users/:userId', requireAuth, async (req, res) => {
+        const userId = req.params.userId;
+        try {
+            const deletedUser = await User.findOneAndDelete({ _id: userId });
+        
+            if (!deletedUser) {
+              return res.status(404).json({ message: "User không tồn tại" });
+            }
+        
+            return res.status(200).json({ message: "Xóa user thành công" });
+          } catch (err) {
+            console.error(err);
+            return res.status(500).json({ message: "Lỗi server" });
+          }
+      });
+
+      app.get('/api/user/:userId', async (req, res) => {
+        const userId = req.params.userId;
+      
+        try {
+          const user = await User.findById({ _id: userId });
+      
+          if (!user) {
+            return res.status(404).json({ message: 'Không tìm thấy người dùng' });
+          }
+      
+          res.json(user);
+        } catch (err) {
+          console.error(err);
+          res.status(500).json({ message: 'Server error' });
+        }
+      });
+      
+
+      app.put('/api/users/:id', requireAuth, async (req, res) => {
+        const { id } = req.params;
+        const { name, email } = req.body;
+      
+        try {
+          // Check if user has permission to update user info
+          if (req.user.role !== 'admin' && req.user._id !== id) {
+            return res.status(401).json({ message: 'Bạn không có quyền chỉnh sửa thông tin người dùng này.' });
+          }
+      
+          // Update user information in MongoDB
+          const user = await User.findByIdAndUpdate(id, { name, email }, { new: true });
+      
+          if (!user) {
+            return res.status(404).json({ message: 'Người dùng không tồn tại.' });
+          }
+      
+          res.json(user);
+        } catch (err) {
+          console.error(err);
+          res.status(500).json({ message: 'Đã xảy ra lỗi khi chỉnh sửa thông tin người dùng.' });
         }
       });
 
