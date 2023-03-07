@@ -293,8 +293,8 @@ app.get("/api/send", function(req, res) {
 });
 
 // app.post('/login', (req, res) => {
-//     // Find user by email
-//     const user = users.find(user => user.email === req.body.email);
+//     // Find user by username
+//     const user = users.find(user => user.username === req.body.username);
 //     if (!user) return res.status(404).json({ message: 'User not found' });
   
 //     // Check password
@@ -310,11 +310,11 @@ app.get("/api/send", function(req, res) {
 
   app.post('/api/login', async (req, res) => {
 
-    const { email, password } = req.body;
+    const { username, password } = req.body;
 
     try {
         // Tìm user trong cơ sở dữ liệu
-        const user = await User.findOne({ email });
+        const user = await User.findOne({ username });
 
         if (!user) {
         return res.status(401).json({ message: 'Username không tồn tại' });
@@ -332,7 +332,7 @@ app.get("/api/send", function(req, res) {
         }
 
         // Nếu đăng nhập thành công, tạo token
-        const token = jwt.sign({ username: user.email , role: user.role}, process.env.JWT_KEY, {
+        const token = jwt.sign({ username: user.username , role: user.role}, process.env.JWT_KEY, {
         expiresIn: '1h',
         });
 
@@ -346,10 +346,10 @@ app.get("/api/send", function(req, res) {
 
     app.post('/api/register', async (req, res) => {
         try {
-        const { email, password, role } = req.body;
+        const { username, password, role } = req.body;
 
-        // Kiểm tra xem email đã tồn tại trong database chưa
-        const userExist = await User.findOne({ email });
+        // Kiểm tra xem username đã tồn tại trong database chưa
+        const userExist = await User.findOne({ username });
         if (userExist) {
         return res.status(400).json({ message: 'Username đã tồn tại' });
         }
@@ -360,7 +360,7 @@ app.get("/api/send", function(req, res) {
 
         // Tạo user mới với vai trò 'user'
         const user = new User({
-            email,
+            username,
             password: password,
             role,
         });
@@ -451,7 +451,7 @@ app.get("/api/send", function(req, res) {
 
       app.put('/api/users/:id', requireAuth, async (req, res) => {
         const { id } = req.params;
-        const { name, email } = req.body;
+        const { name, username } = req.body;
       
         try {
           // Check if user has permission to update user info
@@ -460,7 +460,7 @@ app.get("/api/send", function(req, res) {
           }
       
           // Update user information in MongoDB
-          const user = await User.findByIdAndUpdate(id, { name, email }, { new: true });
+          const user = await User.findByIdAndUpdate(id, { name, username }, { new: true });
       
           if (!user) {
             return res.status(404).json({ message: 'Người dùng không tồn tại.' });
