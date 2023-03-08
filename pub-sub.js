@@ -323,9 +323,9 @@ app.get("/api/send", function(req, res) {
         console.log({user})
 
         // So sánh mật khẩu đã được mã hóa trong cơ sở dữ liệu với mật khẩu cung cấp bởi người dùng
-        //const isMatch = await bcrypt.compare(password, user.password);
+        const isMatch = await bcrypt.compare(password, user.password);
        
-        const isMatch = password === user.password;
+        // const isMatch = password === user.password;
 
         if (!isMatch) {
         return res.status(401).json({ message: 'Mật khẩu không đúng' });
@@ -355,14 +355,20 @@ app.get("/api/send", function(req, res) {
         }
 
         // Hash mật khẩu
-        // const salt = await bcrypt.genSalt(10);
-        // const hashedPassword = await bcrypt.hash(password, salt);
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
 
         // Tạo user mới với vai trò 'user'
+        // const user = new User({
+        //     username,
+        //     password: password,
+        //     role,
+        // });
+
         const user = new User({
-            username,
-            password: password,
-            role,
+          username,
+          password: hashedPassword,
+          role,
         });
 
         // Lưu user vào database
