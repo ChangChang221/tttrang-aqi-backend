@@ -437,7 +437,7 @@ app.get("/api/send", function(req, res) {
           }
       });
 
-      app.get('/api/user/:userId', async (req, res) => {
+      app.get('/api/users/:userId', async (req, res) => {
         const userId = req.params.userId;
       
         try {
