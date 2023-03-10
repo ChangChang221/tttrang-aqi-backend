@@ -1,10 +1,12 @@
 //Require Mongoose
 const { Double } = require('mongodb');
-var mongoose = require('mongoose');
+const mongoose = require('mongoose');
 
-var citySchema = new mongoose.Schema({
+const citySchema = new mongoose.Schema({
   name: {
-    type: String
+    type: String , 
+    required: true,
+    unique: true
   },
   temperature: {
     type: String
@@ -29,9 +31,17 @@ var citySchema = new mongoose.Schema({
   },
   img:{
     type: String
+  },
+  lat:{
+    type: Number
+  },
+  lng:{
+    type: Number
   }
 }, {
   collection: 'city'
 });
-var city = mongoose.model('city', citySchema );
+
+const city = mongoose.model('city', citySchema );
+
 module.exports = city;

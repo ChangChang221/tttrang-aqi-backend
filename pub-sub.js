@@ -392,6 +392,7 @@ app.get("/api/send", function(req, res) {
     //       res.status(500).json({ message: 'Internal Server Error' });
     //     }
     //   });
+
     const requireAuth = (req, res, next) => {
         const token = req.headers.authorization;
         console.log({token})
@@ -477,6 +478,51 @@ app.get("/api/send", function(req, res) {
           console.error(err);
           res.status(500).json({ message: 'Đã xảy ra lỗi khi chỉnh sửa thông tin người dùng.' });
         }
+      });
+
+      app.post('/api/city', requireAuth, async (req, res) => {
+        try {
+        const { name, lat, lng } = req.body;
+
+        // Kiểm tra xem username đã tồn tại trong database chưa
+        const cityExist = await city.findOne({ name });
+
+        if (cityExist) {
+        return res.status(400).json({ message: 'City đã tồn tại' });
+        }
+
+  
+        // Tạo user mới với vai trò 'user'
+        const cityNew = new city({
+            name,
+            lat,
+            lng
+        });
+
+        // Lưu user vào database
+        await cityNew.save();
+
+        res.status(200).json({ message: 'Thêm trạm thành công', city });
+        } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Lỗi server' });
+        }
+      });
+
+      app.delete('/api/city/:cityId', requireAuth, async (req, res) => {
+        const cityId = req.params.cityId;
+        try {
+            const deletedCity = await city.findOneAndDelete({ _id: cityId });
+        
+            if (!deletedCity) {
+              return res.status(404).json({ message: "City không tồn tại" });
+            }
+        
+            return res.status(200).json({ message: "Xóa city thành công" });
+          } catch (err) {
+            console.error(err);
+            return res.status(500).json({ message: "Lỗi server" });
+          }
       });
 
 //   app.get('/users', authenticateToken, (req, res) => {
